@@ -32,6 +32,7 @@ profit = [p - c for p, c in zip(price, total_production_cost)]
 
 # Calculating the net income
 net_income = [p * (1 - (t / 100)) for p, t in zip(profit, tax)]
+# print(net_income)
 
 # add integer decision variables
 x = m.addVar(vtype=GRB.INTEGER, name='x')
@@ -50,6 +51,7 @@ c2 = m.addConstr(x >= 120000)
 c3 = m.addConstr(y >= 100000)
 c4 = m.addConstr(z >= 80000)
 c5 = m.addConstr(w >= 15000)
+c6 = m.addConstr(total_production_cost[0]*x + total_production_cost[1]*y + total_production_cost[2]*z + total_production_cost[3]*w <= 40000000000)
 
 # solve the model
 m.optimize()
