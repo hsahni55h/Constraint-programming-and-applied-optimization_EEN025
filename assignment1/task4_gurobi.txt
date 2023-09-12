@@ -1,0 +1,55 @@
+Fiat has decided to allocate part of last year’s revenues W into opening some new retailers in Puglia.
+Preliminary studies helped find a set of possible locations I. Opening a retailer at the location i comes with a
+fixed cost F_i (purchase the land, pay administrative costs,…) and a variable cost C_i based on the retailer size,
+measured in hundreds of square meters. For each location the retailer centre has a minimum size L_i and
+maximum one U_i . 
+Once it is open, each retailer is expected to produce revenues R_i based on its size (again
+measured in hundreds of square meters). Determine the set of locations to open new retail centres and their
+size in order to maximize the revenues, keeping in mind that not more that K centres can be open.
+
+***In this task no actual data is given, therefore the model has to be formulated as a function of the given
+sets and parameters. ***
+------------------------------------------------------------------------------------------------------------------
+
+let, x_i = 1, if a center is opened otherwise x_i = 0
+
+revenue from last year = W
+maximum number of centers possible = K
+possible locations = I
+fixed cost = F_i
+Variable cost = C_i
+Minimum size of center = L_i
+Maximum size of center = U_i
+
+Expected revenue from centers = R_i (depends on the size of the center)
+
+Constraint_1:
+-------------
+
+let s_i denote the size of the center i such that
+
+==>     L_i*x_i <= s_i <= U_i * x_i, for all i∈I
+
+Constraint_2:
+-------------
+
+==>     ∑x_i <= K, for all i∈
+All possible open centers should not exceed the maximum allowed
+
+
+Constraint_3:
+-------------
+
+
+The cost of openeing the centers should not be more than W
+
+==>     ∑(F_i * x_i) + ∑(C_i * s_i * x_i) <= W, for all i∈I
+
+
+Objective Function:
+-------------------
+
+revenue should be maximized
+
+==>        max(∑(R_i * s_i * x_i)), for all i∈I
+
