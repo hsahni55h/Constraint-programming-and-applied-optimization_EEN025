@@ -1,9 +1,9 @@
 from gurobipy import *
 
-# x1 = Panda (Mirafori)
-# x2 = 500 (Tychy)
-# x3 = Musa (Melfi)
-# x4 = Giulia (cassino)
+# x = Panda (Mirafori)
+# y = 500 (Tychy)
+# z = Musa (Melfi)
+# w = Giulia (cassino)
 
 
 # Create a new model
