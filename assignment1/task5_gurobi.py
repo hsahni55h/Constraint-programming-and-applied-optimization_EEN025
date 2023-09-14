@@ -4,11 +4,16 @@ from gurobipy import *
 m = Model('model')
 
 # add integer decision variables
-a = m.addVar(vtype=GRB.CONTINUOUS, name='a', lb=0.0, ub=1.0)
-b = m.addVar(vtype=GRB.CONTINUOUS, name='b', lb=0.0, ub=1.0)
-c = m.addVar(vtype=GRB.CONTINUOUS, name='c', lb=0.0, ub=1.0)
-d = m.addVar(vtype=GRB.CONTINUOUS, name='d', lb=0.0, ub=1.0)
-e = m.addVar(vtype=GRB.CONTINUOUS, name='e', lb=0.0, ub=1.0)
+x1 = m.addVar(vtype=GRB.CONTINUOUS, name='x1', lb=0.0, ub=1.0)
+x2 = m.addVar(vtype=GRB.CONTINUOUS, name='x2', lb=0.0, ub=1.0)
+x3 = m.addVar(vtype=GRB.CONTINUOUS, name='x3', lb=0.0, ub=1.0)
+x4 = m.addVar(vtype=GRB.CONTINUOUS, name='x4', lb=0.0, ub=1.0)
+x5 = m.addVar(vtype=GRB.CONTINUOUS, name='x5', lb=0.0, ub=1.0)
+
+A = m.addVar(vtype=GRB.INTEGER, name='A', lb=0, ub=1)
+C = m.addVar(vtype=GRB.INTEGER, name='C', lb=0, ub=1)
+D = m.addVar(vtype=GRB.INTEGER, name='D', lb=0, ub=1)
+E = m.addVar(vtype=GRB.INTEGER, name='E', lb=0, ub=1)
 
 # constants - interest rate per annum
 i_a = 0.045
@@ -32,21 +37,22 @@ r_d = (1 + p_d * i_d * 0.7 / 12.0)
 r_e = (1 + p_e * i_e / 12.0)
 
 # set objective function
-m.setObjective(r_a*a + r_b*b + r_c*c + r_d*d + r_e*e, GRB.MAXIMIZE)
+m.setObjective(r_a*x1 + r_b*x2 + r_c*x3 + r_d*x4 + r_e*x5, GRB.MAXIMIZE)
 
 # add constraints
-c1 = m.addConstr(b + c + d >= 0.4)
-c2 = m.addConstr(2*a + 3*b + c + 4*d + 5*e <= 7.5)          # 1.5 * 5 = 7.5
-c3 = m.addConstr(9*a + 15*b + 4*c + 3*d + 2*e <= 300)       # 5 yr * 12 month/yr * 5 = 300
+c1 = m.addConstr(x2 + x3 + x4 >= 0.4)
+c2 = m.addConstr(2*x1 + 3*x2 + x3 + 4*x4 + 5*x5 <= 7.5)          # 1.5 * 5 = 7.5
+c3 = m.addConstr(9*x1 + 15*x2 + 4*x3 + 3*x4 + 2*x5 <= 300)       # 5 yr * 12 month/yr * 5 = 300
 
-# c4 = m.addConstr()
-# c5 = m.addConstr(a >= (1.0/1000.0)+0.0001)  # 0.0001 is added to introduce equality sign
-c6 = m.addConstr(a + b + c + d + e == 1.0)
+c4 = m.addConstr(C + D <= 1)
+c5 = m.addConstr(x1 >= (1.0/1000.0))
+c6 = m.addConstr((E - A) <= 0)
+c7 = m.addConstr(x1 + x2 + x2 + x4 + x5 == 1.0)
 
 # solve the model
 m.optimize()
 
 vars = m.getVars()
 for var in vars:
-    # print(f"{var.VarName}: {var.X}")
-    print(var)
+    print(f"{var.VarName}: {var.X}")
+    # print(var)
