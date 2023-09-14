@@ -46,7 +46,7 @@ c3 = m.addConstr(9*x1 + 15*x2 + 4*x3 + 3*x4 + 2*x5 <= 300)       # 5 yr * 12 mon
 
 c4 = m.addConstr(C + D <= 1)                            # mutual exclusion between C and D
 c5 = m.addConstr(1.0 + (x1 - (1.0/1000.0)) >= 1.0*E)    # if investment in A > 1 million (out of 1 billion) then you may (or even may not) invest in E, but its possible to invest in E if required
-c7 = m.addConstr(x1 + x2 + x2 + x4 + x5 == 1.0)         # sum of all percentages must equal  to 100% i.e 1.0
+c6 = m.addConstr(x1 + x2 + x2 + x4 + x5 == 1.0)         # sum of all percentages must equal  to 100% i.e 1.0
 
 # solve the model
 m.optimize()
