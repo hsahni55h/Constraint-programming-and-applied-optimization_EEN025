@@ -10,7 +10,7 @@ x3 = m.addVar(vtype=GRB.CONTINUOUS, name='x3', lb=0.0, ub=1.0)
 x4 = m.addVar(vtype=GRB.CONTINUOUS, name='x4', lb=0.0, ub=1.0)
 x5 = m.addVar(vtype=GRB.CONTINUOUS, name='x5', lb=0.0, ub=1.0)
 
-A = m.addVar(vtype=GRB.INTEGER, name='A', lb=0, ub=1)
+A = m.addVar(vtype=GRB.CONTINUOUS, name='A', lb=0)
 C = m.addVar(vtype=GRB.INTEGER, name='C', lb=0, ub=1)
 D = m.addVar(vtype=GRB.INTEGER, name='D', lb=0, ub=1)
 E = m.addVar(vtype=GRB.INTEGER, name='E', lb=0, ub=1)
@@ -45,8 +45,8 @@ c2 = m.addConstr(2*x1 + 3*x2 + x3 + 4*x4 + 5*x5 <= 7.5)          # 1.5 * 5 = 7.5
 c3 = m.addConstr(9*x1 + 15*x2 + 4*x3 + 3*x4 + 2*x5 <= 300)       # 5 yr * 12 month/yr * 5 = 300
 
 c4 = m.addConstr(C + D <= 1)
-c5 = m.addConstr(x1 >= (1.0/1000.0))
-c6 = m.addConstr((E - A) <= 0)
+c5 = m.addConstr(A >=1)
+c6 = m.addConstr(E <= A)
 c7 = m.addConstr(x1 + x2 + x2 + x4 + x5 == 1.0)
 
 # solve the model
