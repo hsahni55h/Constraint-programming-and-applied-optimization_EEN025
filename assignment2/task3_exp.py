@@ -47,21 +47,25 @@ for edge in edge_names:
 start = "node5"
 end = "node3"
 
-# All other nodes (except the source and destination nodes) will either be (i) part of the path or (ii) not part of the path.
 for name, node in nodes.items():
+    # get all edges connected to the node
     node_edges = shop_floor.get_edges_for(node)
+    
+    # get the name of the edges -- silly and heavy operation :(
     node_edges_names = []
     for edge in node_edges:
         names = get_keys_from_value(edges, edge)
         node_edges_names += [name for name in names]
-    
-    node_edges = [edge_vars[name] for name in node_edges_names]
 
+    # get booleans related to these respective edges
+    node_edges = [edge_vars[name] for name in node_edges_names]
+    
+    # For both source and destination nodes, only one of the neighboring edges will be part of the path.
     if (name == start) or (name == end):
-        # For both source and destination nodes, only one of the neighboring edges will be part of the path.
         m.add(sum(node_edges) == 1)
         continue
 
+    # All other nodes (except the source and destination nodes) will either be (i) part of the path or (ii) not part of the path.
     if len(node_edges) >= 2:
         m.add(pathCheck(node_vars[node.name], node_edges, 2))
     else:
