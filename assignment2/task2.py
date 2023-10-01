@@ -4,13 +4,17 @@ from shop_floor_layout import *
 
 def task2():
     speed = 5.0                   # (in m/s) This is given data
-    
+
     # Specify the file name (without full path) in the same directory as the script
     file_path = 'ft06.txt'        # TODO: change the file name as per requirement.
 
     # Read job scheduling data from the specified file
     n, m, times, machines = read_job_scheduling_data(file_path)
-
+    for job in machines:
+        job.insert(0, "W")
+        job.insert(len(job), "D")
+    print(machines)
+    
     # For all the jobs in the list find shortest path between machines
     machine_pairs_list = []
     distances_list = []
@@ -42,4 +46,3 @@ def task2():
 # Entry point of the script
 if __name__ == "__main__":
     task2()
-

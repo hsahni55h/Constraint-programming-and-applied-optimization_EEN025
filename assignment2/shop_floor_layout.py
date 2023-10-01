@@ -37,7 +37,8 @@ node2S = Node("2S", {"x":53, "y":0})
 node3S = Node("3S", {"x":91, "y":0})
 node3SE = Node("3SE", {"x":119, "y":0})
 
-machine_node = [node1, node2, node3, node4, node5, node6]
+# machine_node = [node1, node2, node3, node4, node5, node6]
+machine_node = {"W":nodeW, 0:node1, 1:node2, 2:node3, 3:node4, 4:node5, 5:node6, "D":nodeD}
 
 nodes = [
     node4W, node4, node1N, node6W, node6,
