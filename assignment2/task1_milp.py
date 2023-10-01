@@ -71,7 +71,7 @@ def solve_job_scheduling(n, m, times, machines):
 # Entry point of the script
 if __name__ == "__main__":
     # Specify the file name (without full path) in the same directory as the script
-    file_name = 'ft10.txt'
+    file_name = 'ft06.txt'
 
     # Construct the full file path by combining the current directory and the file name
     file_path = file_name
