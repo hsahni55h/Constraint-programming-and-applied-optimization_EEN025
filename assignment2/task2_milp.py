@@ -20,7 +20,17 @@ def read_job_scheduling_data(file_path):
             machines.append([pair[0] for pair in machine_process_pairs])
             times.append([pair[1] for pair in machine_process_pairs])
 
-        return n, m, times, machines
+        # Read updated travel times from a separate file or data source
+        travel_times = [
+            [28.4, 10.4, 10.8, 23.6, 18.2, 25.4, 26.6],
+            [14.0, 14.4, 22.8, 25.4, 13.0, 12.8, 27.0],
+            [28.4, 23.2, 18.2, 13.0, 10.8, 8.4, 26.6],
+            [14.0, 10.8, 10.4, 23.2, 15.6, 25.4, 20.0],
+            [28.4, 14.4, 8.4, 25.4, 13.0, 12.8, 27.0],
+            [14.0, 23.6, 18.2, 13.0, 12.4, 22.8, 10.6]
+        ]
+        
+    return n, m, times, machines, travel_times
 
 # Function to solve the job scheduling problem
 
@@ -44,11 +54,20 @@ def solve_job_scheduling(n, m, times, machines):
 
     # Add constraints
     # Constraints for task sequencing on machines
+    # for j in range(n):
+    #     for i in range(1, m):
+    #         machine_start = x[j][machines[j][i]]
+    #         machine_end = x[j][machines[j][i-1]]
+    #         model.addConstr(machine_start - machine_end >= times[j][machines[j][i-1]])
+            
     for j in range(n):
         for i in range(1, m):
             machine_start = x[j][machines[j][i]]
-            machine_end = x[j][machines[j][i-1]]
-            model.addConstr(machine_start - machine_end >= times[j][machines[j][i-1]])
+            machine_end = x[j][machines[j][i - 1]]
+            # Add travel time to the constraint
+            travel_time = travel_times[j][machines[j][i - 1]]
+            model.addConstr(machine_start - machine_end >= times[j][machines[j][i - 1]] + travel_time)
+
 
     # Constraints for task sequencing between jobs
     for j in range(n):
@@ -76,8 +95,8 @@ if __name__ == "__main__":
     # Construct the full file path by combining the current directory and the file name
     file_path = file_name
 
-    # Read job scheduling data from the specified file
-    n, m, times, machines = read_job_scheduling_data(file_path)
+    # Read job scheduling data including updated travel times from the specified file
+    n, m, times, machines, travel_times = read_job_scheduling_data(file_path)
 
     # Solve the job scheduling problem using the extracted data
     model = solve_job_scheduling(n, m, times, machines)
