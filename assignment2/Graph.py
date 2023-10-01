@@ -98,6 +98,9 @@ class Graph:
         
         return graph_str
     
+    def get_edges_for(self, node:Node) -> list:
+        return [edge for edge in self.edges if (edge.start == node) or (edge.end == node)]
+    
     # TODO: Must do like this in future for shortest path and its heuristic...
     # from typing import Callable, List, Union
     # def shortest_path_between(self, start:Node, end:Node, shortest_path_algorithm:callable[Union[List[Node], List[Edge], Node, Node], Union[int, List[Node]]]):
