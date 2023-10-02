@@ -1,0 +1,11 @@
+Solution count: 10
+#1: [edge_5_5E, edge_5E_2, edge_2_2E, edge_1S_2E, edge_1S_3N, edge_3N_3] obj: 114
+#9: [edge_5_5E, edge_5E_2, edge_2_2E, edge_1S_2E, edge_1_1S, edge_1_1E, edge_1E_3N, edge_3N_3] obj: 148
+#2: [edge_5_5E, edge_5E_2, edge_2_2S, edge_2S_3S, edge_3_3S] obj: 114
+#3: [edge_5_5E, edge_1W_5E, edge_1W_1, edge_1_1S, edge_1S_3N, edge_3N_3] obj: 114
+#5: [edge_5_5E, edge_1W_5E, edge_1W_1, edge_1_1E, edge_1E_3N, edge_3N_3] obj: 114
+#10: [edge_5_5E, edge_1W_5E, edge_1W_1, edge_1N_1, edge_1N_6W, edge_6W_1E, edge_1E_3N, edge_3N_3] obj: 152
+#4: [edge_5N_5, edge_5N_1W, edge_1W_1, edge_1_1S, edge_1S_3N, edge_3N_3] obj: 114
+#6: [edge_5N_5, edge_5N_1W, edge_1W_1, edge_1_1E, edge_1E_3N, edge_3N_3] obj: 114
+#7: [edge_5N_5, edge_5N_1W, edge_1W_5E, edge_5E_2, edge_2_2E, edge_1S_2E, edge_1S_3N, edge_3N_3] obj: 148
+#8: [edge_5N_5, edge_5N_1W, edge_1W_5E, edge_5E_2, edge_2_2S, edge_2S_3S, edge_3_3S] obj: 148

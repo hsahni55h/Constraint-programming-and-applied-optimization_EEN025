@@ -88,12 +88,23 @@ s.minimize(obj)
 
 # solve the model
 solutions = []
-count = 0
-while((count != 10) and (s.check() == sat)):
+count = 10
+while(count and (s.check() == sat)):
     sol = s.model()
     solutions.append(sol)
-    s.add(obj > sol[obj])       # TODO: we'll miss out on solution that has same obj value but has different path.
-    count = count + 1
+    active_edge_vars = [edge_vars[str(var)] for var in sol.decls() if (sol[var] == 1) and str(var).startswith('edge_')]
+    s.add(sum(active_edge_vars) != sum(edge for name, edge in edge_vars.items()))
+    # s.add(obj > sol[obj])       # TODO: This will give different solutoins but we'll miss out on solution that has same obj value but has different path.
     print(count)
+    count = count - 1
 
-print(solutions[-1])
+# print(solutions)
+print("Solution count: {}".format(len(solutions)))
+for sol in solutions:
+    active_edge_vars = [var for var in sol.decls() if (sol[var] == 1) and str(var).startswith('edge_')]
+    count = count + 1
+    print("#{}:".format(count), active_edge_vars, "obj: {}".format(sol[obj]))
+
+# TODO: not all edges must have same value as its current value i.e. new state must not be same as prev state. use the reference below to get different solution sets.
+# Reference: https://theory.stanford.edu/~nikolaj/programmingz3.html#sec-blocking-evaluations
+# Reference Section: 5.1. Blocking evaluations
