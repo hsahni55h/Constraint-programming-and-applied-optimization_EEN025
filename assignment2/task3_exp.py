@@ -42,7 +42,6 @@ for edge in edge_names:
     m.add(edge_vars[edge] >= 0)
     m.add(edge_vars[edge] <= 1)
 
-
 # add constraints
 start = "node5"
 end = "node3"
@@ -64,7 +63,7 @@ for name, node in nodes.items():
     if (name == start) or (name == end):
         m.add(sum(node_edges) == 1)
         continue
-
+    
     # All other nodes (except the source and destination nodes) will either be (i) part of the path or (ii) not part of the path.
     if len(node_edges) >= 2:
         m.add(pathCheck(node_vars[node.name], node_edges, 2))
