@@ -1,6 +1,16 @@
 from z3 import *
 from shop_floor_layout import *
 
+# ---------------------------- 
+# -------- USER INPUT --------
+# ----------------------------
+start = "node5"
+end = "node3"
+blocking_nodes = ["nodeW", "nodeD", "node6"]
+
+# ---------------------------- 
+# Internal Function 
+# ----------------------------
 def IntNot(x:Int) -> Int:
     return (1 - x)
 
@@ -26,6 +36,10 @@ edge_weights = {"edge_4W_4":21, "edge_4_1N":45, "edge_1N_6W":18, "edge_6W_6":28,
                 "edge_6W_1E":19, "edge_1E_3N":17, "edge_3N_3":17, "edge_3_3S":17, 
                 "edge_DN_3NE":17, "edge_3NE_3E":17, "edge_3E_3SE":17,}
 
+# ---------------------------- 
+# Problem formulation and solving
+# ----------------------------
+
 # create new model
 s = Optimize()
 
@@ -43,10 +57,6 @@ for edge in edge_names:
     s.add(edge_vars[edge] <= 1)
 
 # add constraints
-start = "node5"
-end = "node3"
-blocking_nodes = ["nodeW", "nodeD", "node6"]
-
 for name, node in nodes.items():
     # get all edges connected to the node
     node_edges = shop_floor.get_edges_for(node)
@@ -90,21 +100,25 @@ s.minimize(obj)
 solutions = []
 count = 10
 while(count and (s.check() == sat)):
-    sol = s.model()
-    solutions.append(sol)
-    active_edge_vars = [edge_vars[str(var)] for var in sol.decls() if (sol[var] == 1) and str(var).startswith('edge_')]
-    s.add(sum(active_edge_vars) != sum(edge for name, edge in edge_vars.items()))
-    # s.add(obj > sol[obj])       # TODO: This will give different solutoins but we'll miss out on solution that has same obj value but has different path.
-    print(count)
+    sol = s.model()             # get the solution from the model
+    solutions.append(sol)       # add it to the solution list
+
+    # make sure that the same solution can't be obtained again (while resolving)
+    active_edge_vars = [edge_vars[str(var)] for var in sol.decls() if (sol[var] == 1) and str(var).startswith('edge_')]     # get all active edges for current solution
+    s.add(sum(active_edge_vars) != sum(edge for _, edge in edge_vars.items()))   # current solution's active edges must not be the only active edges in upcoming solution
+    print(count)    # printing for visual progress feedback
     count = count - 1
 
-# print(solutions)
+# ---------------------------- 
+# Printing output 
+# ----------------------------
 print("Solution count: {}".format(len(solutions)))
 for sol in solutions:
     active_edge_vars = [var for var in sol.decls() if (sol[var] == 1) and str(var).startswith('edge_')]
     count = count + 1
     print("#{}:".format(count), active_edge_vars, "obj: {}".format(sol[obj]))
 
-# TODO: not all edges must have same value as its current value i.e. new state must not be same as prev state. use the reference below to get different solution sets.
+# Good to look for future: 
+# for finding new solutions efficiently
 # Reference: https://theory.stanford.edu/~nikolaj/programmingz3.html#sec-blocking-evaluations
 # Reference Section: 5.1. Blocking evaluations
