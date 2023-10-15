@@ -61,7 +61,7 @@ def solve_job_scheduling_cp(n, m, times, machines):
 
 if __name__ == "__main__":
     # Specify the path to your input file
-    input_file_path = 'ft06.txt'
+    input_file_path = 'la10.txt'
 
     # Read data from the input file
     n, m, times, machines = read_data_from_file(input_file_path)
