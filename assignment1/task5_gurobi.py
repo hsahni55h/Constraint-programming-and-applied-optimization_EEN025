@@ -1,58 +1,43 @@
 from gurobipy import *
 
-# create new model
-m = Model('model')
+def main():
+    # Create a new model
+    m = Model("Investment")
 
-# add integer decision variables
-x1 = m.addVar(vtype=GRB.CONTINUOUS, name='x1', lb=0.0, ub=1.0)
-x2 = m.addVar(vtype=GRB.CONTINUOUS, name='x2', lb=0.0, ub=1.0)
-x3 = m.addVar(vtype=GRB.CONTINUOUS, name='x3', lb=0.0, ub=1.0)
-x4 = m.addVar(vtype=GRB.CONTINUOUS, name='x4', lb=0.0, ub=1.0)
-x5 = m.addVar(vtype=GRB.CONTINUOUS, name='x5', lb=0.0, ub=1.0)
+    # Define decision variables
+    x = {}
+    y = {}
+    investments = ["A", "B", "C", "D", "E"]
+    for investment in investments:
+        x[investment] = m.addVar(vtype=GRB.CONTINUOUS, name=f"x_{investment}")
+        y[investment] = m.addVar(vtype=GRB.BINARY, name=f"y_{investment}")
 
-A = m.addVar(vtype=GRB.INTEGER, name='A', lb=0, ub=1)
-C = m.addVar(vtype=GRB.INTEGER, name='C', lb=0, ub=1)
-D = m.addVar(vtype=GRB.INTEGER, name='D', lb=0, ub=1)
-E = m.addVar(vtype=GRB.INTEGER, name='E', lb=0, ub=1)
+    # Set the objective function
+    c1 = x["A"] * (1 + 4.5 / 100) ** 9
+    c2 = x["B"] * (1 + 5.4 / 100) ** 15
+    c3 = x["C"] * (1 + 5.1 / 100) ** 4 - 0.3 * x["C"] * (1 + 5.1 / 100) ** 4
+    c4 = x["D"] * (1 + 4.4 / 100) ** 3 - 0.3 * x["D"] * (1 + 4.4 / 100) ** 3
+    c5 = x["E"] * (1 + 46.1 / 100) ** 2
+    m.setObjective(c1 + c2 + c3 + c4 + c5, GRB.MAXIMIZE)
 
-# constants - interest rate per annum
-i_a = 0.045
-i_b = 0.054
-i_c = 0.051
-i_d = 0.044
-i_e = 0.061
+    # Add constraints
+    m.addConstr(quicksum(x[inv] for inv in investments) <= 1e9)
+    m.addConstr(quicksum(x[inv] for inv in ["B", "C", "D"]) >= 0.4 * 1e9)
+    m.addConstr(9 * x["A"] + 15 * x["B"] + 4 * x["C"] + 3 * x["D"] + 2 * x["E"] <= 5 * quicksum(x[inv] for inv in investments))
+    m.addConstr(2 * x["A"] + 3 * x["B"] + x["C"] + 4 * x["D"] + 5 * x["E"] <= 1.5 * quicksum(x[inv] for inv in investments))
+    m.addConstr(y["C"] + y["D"] <= 1)
+    M = 1e9
+    m.addConstr(x["C"] <= M * y["C"])
+    m.addConstr(x["D"] <= M * y["D"])
+    m.addConstr(x["E"] <= M * y["E"])
+    m.addConstr(x["A"] >= 1e6 * y["E"])
 
-# constants - period (in months)
-p_a = 9.0
-p_b = 15.0
-p_c = 4.0
-p_d = 3.0
-p_e = 2.0
+    # Optimize the model
+    m.optimize()
 
-# constants - revenue
-r_a = (1 + p_a * i_a / 12.0)
-r_b = (1 + p_b * i_b / 12.0)
-r_c = (1 + p_c * i_c * 0.7 / 12.0)
-r_d = (1 + p_d * i_d * 0.7 / 12.0)
-r_e = (1 + p_e * i_e / 12.0)
+    # Display results
+    for investment in investments:
+        print(f"Investment in {investment}: {x[investment].x}")
 
-# set objective function
-m.setObjective(r_a*x1 + r_b*x2 + r_c*x3 + r_d*x4 + r_e*x5, GRB.MAXIMIZE)
-
-# add constraints
-c1 = m.addConstr(x2 + x3 + x4 >= 0.4)
-c2 = m.addConstr(2*x1 + 3*x2 + x3 + 4*x4 + 5*x5 <= 7.5)          # 1.5 * 5 = 7.5
-c3 = m.addConstr(9*x1 + 15*x2 + 4*x3 + 3*x4 + 2*x5 <= 300)       # 5 yr * 12 month/yr * 5 = 300
-
-c4 = m.addConstr(C + D <= 1)
-c5 = m.addConstr(A >=1)
-c6 = m.addConstr(1 + (x1 - 1000000/1000000000) >= E)
-c7 = m.addConstr(x1 + x2 + x2 + x4 + x5 == 1.0)
-
-# solve the model
-m.optimize()
-
-vars = m.getVars()
-for var in vars:
-    print(f"{var.VarName}: {var.X}")
-    # print(var)
+if __name__ == "__main__":
+    main()

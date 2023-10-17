@@ -1,51 +1,38 @@
+
 from gurobipy import *
+m = Model("Investment")
+xA  = m.addVar(vtype=GRB.CONTINUOUS, name ="x_A")
+xB  = m.addVar(vtype=GRB.CONTINUOUS, name ="x_B")
+xC  = m.addVar(vtype=GRB.CONTINUOUS, name ="x_C")
+xD  = m.addVar(vtype=GRB.CONTINUOUS, name ="x_D")
+xE  = m.addVar(vtype=GRB.CONTINUOUS, name ="x_E")
+y_C = m.addVar(vtype=GRB.BINARY, name="y_C")
+y_D = m.addVar(vtype=GRB.BINARY, name="y_D")
+y_E = m.addVar(vtype=GRB.BINARY, name="y_E")
+c1 = xA * (pow(1 + 4.5 / 100, 9))
+c2 = xB * (pow(1 + 5.4 / 100, 15))
+c3 = xC * (pow(1 + 5.1 / 100, 4)) - 0.3 * (xC * (pow(1 + 5.1 / 100, 4)))
+c4 = xD * (pow(1 + 4.4 / 100, 3)) - 0.3 * (xD * (pow(1 + 4.4 / 100, 3)))
+c5 = xE * (pow(1 + 46.1 / 100, 2))
+M = 1e9
+M1 = 1.1e9
+m.setObjective(c1 + c2 + c3 + c4 + c5, GRB.MAXIMIZE)
+m.addConstr(xA + xB + xC + xD + xE <= 1000000000.0)
+m.addConstr(xB + xC + xD >= 40/100 * 1000000000.0)
+m.addConstr(9*xA+15*xB+4*xC+3*xD+2*xE <= 5*(xA+xB+xC+xD+xE))
+m.addConstr(2 * xA + 3 * xB + xC + 4 * xD + 5 * xE <= 1.5 * (xA + xB + xC + xD + xE))
+m.addConstr(y_C + y_D <= 1)
+m.addConstr(xC <= M * y_C)
+m.addConstr(xD <= M * y_D)
+m.addConstr(xE <= M * y_E)
+m.addConstr(xA >= 1e6 * y_E)
 
-# Create a new model
-m = Model('CarProduction')
 
-plants = ['Mirafiori', 'Tychy', 'Melfi', 'Cassino']
-models = ['Panda', '500', 'Musa', 'Giulia']
 
-tax = [30, 15, 20, 30]
-price = [106000, 136000, 150000, 427000]
-material_cost_percentage = [57, 60, 55, 45]
-monthly_salary = [20000, 11000, 20000, 26000]
-manhour = [40, 45, 38, 100]
 
-# Calculating the material cost
-material_cost = [round(p * (m / 100), 2) for p, m in zip(price, material_cost_percentage)]
-
-# Calculating the manhour cost of production
-manhour_cost = [(s / 160) * m for s, m in zip(monthly_salary, manhour)]
-
-# Calculating the total production cost
-total_production_cost = [m + h for m, h in zip(material_cost, manhour_cost)]
-
-profit = [p - c for p, c in zip(price, total_production_cost)]
-
-net_income = [p * (1 - (t / 100)) for p, t in zip(profit, tax)]
-
-# Add integer decision variables for production quantities
-x = {}
-for i, plant in enumerate(plants):
-    for j, model in enumerate(models):
-        x[(i, j)] = m.addVar(vtype=GRB.INTEGER, name=f'x_{i}_{j}')
-
-# Set the objective function
-m.setObjective(quicksum(net_income[j] * x[(i, j)] for i in range(len(plants)) for j in range(len(models))), GRB.MAXIMIZE)
-
-# Add constraints
-c1 = m.addConstr(quicksum(x[(i, 0)] for i in range(len(plants))) <= 300000)  # Total production capacity constraint
-c2 = m.addConstr(x[(0, 0)] >= 120000)  # Production constraint for Panda in Mirafiori
-c3 = m.addConstr(x[(1, 1)] >= 100000)  # Production constraint for 500 in Tychy
-c4 = m.addConstr(x[(2, 2)] >= 80000)   # Production constraint for Musa in Melfi
-c5 = m.addConstr(x[(3, 3)] >= 15000)   # Production constraint for Giulia in Cassino
-
-# Solve the model
 m.optimize()
-
-# Print the results
-if m.status == GRB.OPTIMAL:
-    for i, plant in enumerate(plants):
-        for j, model in enumerate(models):
-            print(f"{model} produced in {plant}: {x[(i, j)].X}")
+print("investment in A:", xA.x)
+print("investment in B:", xB.x)
+print("investment in C:", xC.x)
+print("investment in D:", xD.x)
+print("investment in E:", xE.x)
