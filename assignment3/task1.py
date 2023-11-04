@@ -1,65 +1,110 @@
 from z3 import *
 
-# Define parameters
-n = 3  # Number of disks
-m = 3  # Number of towers
+# Parameters
+tws = 3  # Number of towers
+ds = 5   # Number of disks
+ts = 1   # Initial time step
 
 # Create a Z3 solver
-solver = Solver()
+s = Solver()
 
-# Define variables to represent the state of the towers
-towers = [[Int(f'd_{i}_{j}') for j in range(m)] for i in range(n)]
+# Temporary variable (not used)
+temp = Int('temp')
+s.add(temp == 1, temp == 2)
 
-# Define variables to represent actions (moving disks)
-actions = [Int(f'a_{i}_{j}_{k}') for i in range(n) for j in range(m) for k in range(m)]
+# Initialize on_test to store the state of towers
+on_test = [[[False for _ in range(128)] for _ in range(tws)] for _ in range(ds)]
 
-# Encode Tower of Hanoi rules as constraints
-for i in range(n):
-    for j in range(m):
-        # A disk can only be on top of a bigger disk (if present) on another tower
-        if i < n - 1:
-            for k in range(j + 1, m):
-                solver.add(Implies(towers[i][j] != 0, And(towers[i][k] == 0, towers[i][j] < towers[i + 1][j])))
-        # No disk can be placed on top of a smaller one
-        if j < m - 1:
-            for k in range(i + 1, n):
-                solver.add(Implies(And(towers[i][j] != 0, towers[i][k] != 0), towers[i][j] < towers[i][k]))
+# Iterate until a solution is found
+while s.check() == unsat:
+    ts = ts + 1  # Increment time step
+    s.reset()    # Reset the solver for new constraints
 
-# Define the initial state
-initial_state = [Int(f'initial_state_{i}') for i in range(m)]
-for i in range(m):
-    solver.add(initial_state[i] == 0)  # All towers are initially empty
-solver.add(towers[0] == [initial_state[i] for i in range(m)])  # Set the initial state
+    # Define Boolean variables and arrays
+    on = [[[Bool('on_%s_%s_%s' % (i, j, k)) for k in range(ts)] for j in range(tws)] for i in range(ds)]
+    obj = [[Bool('obj_%s_%s' % (i, j)) for j in range(ts)] for i in range(ds)]
+    start = [[Bool('start_%s_%s' % (i, j)) for j in range(ts)] for i in range(tws)]
+    to = [[Bool('to_%s_%s' % (i, j)) for j in range(ts)] for i in range(tws)]
 
-# Define the final state
-final_state = [Int(f'final_state_{i}') for i in range(m)]
-for i in range(m):
-    solver.add(final_state[i] == n - 1)  # All disks are in the final tower
-solver.add(towers[n - 1] == [final_state[i] for i in range(m)])  # Set the final state
+    # Constraints
+    # Precondition I
+    Con1 = [Implies(And(on[d][tw][t], Or([on[d2][tw][t] for d2 in range(d)])),
+                    Not(obj[d][t]))
+            for d in range(ds)
+            for tw in range(tws)
+            for t in range(ts)]
 
-# Define constraints for actions
-for i in range(n):
-    for j in range(m):
-        for k in range(m):
-            # An action is valid if and only if it corresponds to moving a disk
-            solver.add(actions[i * m * m + j * m + k] ==
-                       If(Or(towers[i][j] == 0, And(towers[i][j] != 0, towers[i][k] == 0, towers[i][j] < towers[i][k])),
-                          1, 0))
+    # Precondition II
+    Con2 = [Implies(And(on[d][tw][t], Or([on[d2][tw2][t] for d2 in range(d)])),
+                    Not(And(obj[d][t], to[tw2][t])))
+            for d in range(ds)
+            for tw in range(tws)
+            for tw2 in range(tws) if tw2 != tw
+            for t in range(ts)]
 
-# Set up the optimization objective
-num_disks_not_in_final_state = Sum([If(towers[i][j] != final_state[j], 1, 0) for i in range(n) for j in range(m)])
-solver.add(num_disks_not_in_final_state == 0)  # All disks should be in the final state
+    # Uniqueness of start variable
+    Con3 = [Implies(And(on[d][tw][t], obj[d][t]),
+                    And(start[tw][t], And([Not(start[tw2][t]) for tw2 in range(tws) if tw2 != tw])))
+            for d in range(ds)
+            for tw in range(tws)
+            for t in range(ts)]
 
-# Ensure that only one action is taken at each time step
-for i in range(n):
-    solver.add(Sum([actions[i * m * m + j * m + k] for j in range(m) for k in range(m)]) == 1)
+    # Uniqueness of To variable
+    Con4 = [to[tw][t] ==
+            And([Not(to[tw2][t]) for tw2 in range(tws) if tw2 != tw])
+            for tw in range(tws)
+            for t in range(ts)]
 
-# Check if the problem is solvable
-if solver.check() == sat:
-    model = solver.model()
-    print("Solution found:")
-    for i in range(n):
-        for j in range(m):
-            print(f"Disk {i + 1} on tower {j + 1}: {model[towers[i][j]]}")
+    # Uniqueness of Obj variable
+    Con5 = [obj[d][t] == And([Not(obj[d2][t]) for d2 in range(ds) if d2 != d])
+            for d in range(ds)
+            for t in range(ts)]
+
+    # Non-moving disks
+    Con6 = [Implies(And(Not(obj[d][t]), on[d][tw][t]),
+                    And(on[d][tw][t + 1], And([Not(on[d][tw2][t + 1]) for tw2 in range(tws) if tw2 != tw])))
+            for d in range(ds)
+            for tw in range(tws)
+            for t in range(ts - 1)]
+
+    # Distinct Start/To
+    Con7 = [Implies(start[tw][t], Not(to[tw][t]))
+            for tw in range(tws)
+            for t in range(ts)]
+
+    # Update
+    Con8 = [Implies(And(obj[d][t], And(start[tw][t], to[tw2][t])),
+                    And(on[d][tw2][t + 1], And([Not(on[d][tw3][t + 1]) for tw3 in range(tws) if tw3 != tw2])))
+            for d in range(ds)
+            for t in range(ts - 1)
+            for tw in range(tws)
+            for tw2 in range(tws) if tw2 != tw]
+
+    # Initial/Final State
+    Con9 = [And(on[d][0][0], on[d][tws - 1][ts - 1])
+            for d in range(ds)]
+
+    # Add all constraints to the solver
+    s.add(Con1 + Con2 + Con3 + Con4 + Con5 + Con6 + Con7 + Con8 + Con9)
+
+print(s.check())
+if s.check() == sat:
+    print('Minimum time steps needed to solve is', ts - 1)
+    m = s.model()
+
+    # Determine the actual number of time steps
+    actual_ts = ts
+
+    # Print the solution for the Tower of Hanoi with 3 discs
+    print("Solution for the Tower of Hanoi with 3 discs:")
+    for t in range(actual_ts):
+        print(f"Time step {t}:")
+        for tw in range(tws):
+            print(f"Tower {tw}: [", end=" ")
+            for d in range(ds):
+                on_test[d][tw][t] = m[on[d][tw][t]]
+                if on_test[d][tw][t]:
+                    print(f"Disk {d}", end=" ")
+            print("]")
 else:
-    print("No solution found")
+    print('No solution found.')
