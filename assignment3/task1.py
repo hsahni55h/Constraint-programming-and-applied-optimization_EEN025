@@ -2,7 +2,7 @@ from z3 import *
 
 # Parameters
 tws = 3  # Number of towers
-ds = 5   # Number of disks
+ds = 3   # Number of disks
 ts = 1   # Initial time step
 
 # Create a Z3 solver
